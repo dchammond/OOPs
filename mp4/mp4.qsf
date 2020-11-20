@@ -39,10 +39,10 @@
 set_global_assignment -name FAMILY "Arria II GZ"
 set_global_assignment -name DEVICE EP2AGZ350HF40I4
 set_global_assignment -name TOP_LEVEL_ENTITY mp4
+
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 18.1.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "17:16:32  NOVEMBER 08, 2020"
 set_global_assignment -name LAST_QUARTUS_VERSION "18.1.0 Standard Edition"
-set_global_assignment -name SYSTEMVERILOG_FILE hdl/mp4.sv
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 set_global_assignment -name MIN_CORE_JUNCTION_TEMP "-40"
 set_global_assignment -name MAX_CORE_JUNCTION_TEMP 100
@@ -65,3 +65,29 @@ set_global_assignment -name EDA_TEST_BENCH_FILE hvl/shadow_memory.sv -section_id
 set_global_assignment -name EDA_TEST_BENCH_FILE hvl/source_tb.sv -section_id mp4_tb
 set_global_assignment -name EDA_TEST_BENCH_FILE hvl/tb_itf.sv -section_id mp4_tb
 set_global_assignment -name EDA_TEST_BENCH_FILE hvl/top.sv -section_id mp4_tb
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/common/rv32i_types.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/common/oops_structs.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cpu/data_interface.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cpu/address_unit.sv
+set_global_assignment -name SDC_FILE mp4.out.sdc
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cpu/register_file.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cpu/reorder_buffer.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/common/queue.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/common/pipeline.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/common/alu.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cpu/program_counter.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cpu/instruction_register.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cpu/instruction_fetcher.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cpu/instruction_decoder.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cpu/instruction_queue.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cpu/instruction_datapath.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cpu/address_buffer.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cpu/reservation_station.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cpu/execution_unit.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cpu/cpu.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/mp4.sv
+set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
