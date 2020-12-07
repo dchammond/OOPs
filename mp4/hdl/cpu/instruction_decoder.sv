@@ -10,6 +10,7 @@ module instruction_decoder
 (
     input                          clk,
     input                          rst,
+    input                          fls,
 
     input logic                    load_decoder_i,
 
@@ -93,6 +94,8 @@ always_comb begin : state_actions
         DECODE2: begin
             instruction_d.pc = pc_q;
             instruction_d.b_imm = '0;
+            instruction_d.jal = '0;
+            instruction_d.jalr = '0;
 
             case(opcode_q)
                 op_lui: begin
@@ -221,7 +224,12 @@ always_comb begin : state_actions
                             end
                         end
                         add: begin
-                            instruction_d.instruction = rr_add;
+                            if(funct7_q[5]) begin
+                                instruction_d.instruction = rr_sub;
+                            end
+                            else begin
+                                instruction_d.instruction = rr_add;
+                            end
                         end
                         sll: begin
                             instruction_d.instruction = rr_sll;
@@ -253,6 +261,7 @@ always_comb begin : state_actions
                     instruction_d.val2 = j_imm_q;
                     instruction_d.dest_reg = rd_q;
                     instruction_d.branch = 1'b1;
+                    instruction_d.jal = 1'b1;
                 end
                 op_jalr: begin
                     instruction_d.instruction = jalr;
@@ -262,6 +271,7 @@ always_comb begin : state_actions
                     instruction_d.val2 = i_imm_q;
                     instruction_d.dest_reg = rd_q;
                     instruction_d.branch = 1'b1;
+                    instruction_d.jalr = 1'b1;
                 end
                 default: ;
             endcase
@@ -297,7 +307,7 @@ end
 
 always_ff @(posedge clk) begin: next_state_assignment
 	/* Assignment of next state on clock edge */
-	if(rst)
+	if(rst | fls)
 		state_q <= DECODE1;
 	else
 		state_q <= state_d;

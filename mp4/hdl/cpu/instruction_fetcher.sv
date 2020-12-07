@@ -12,6 +12,7 @@ module instruction_fetcher
 (
     input                           clk,
     input                           rst,
+    input                           fls,
 
     input rv32i_word                pc_i,
     input logic [READ_WIDTH-1:0]    mem_rdata_i,
@@ -118,7 +119,7 @@ end
 
 always_ff @(posedge clk) begin: next_state_assignment
 	/* Assignment of next state on clock edge */
-	if(rst)
+	if(rst | fls)
 		state_q <= FETCH1;
 	else
 		state_q <= state_d;

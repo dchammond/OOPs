@@ -60,10 +60,7 @@ function void update_from_bus;
     for(int i = 0; i < MAX_COUNT; i++) begin
         for(int j = 0; j < DEPTH; j++) begin
             if(common_data_bus_i.fls) begin
-                // For now we flush everything
-                //if(used_mask_q[i][j] && common_data_bus_i.fls_vector[memory_q[i][j].rob_dest]) begin
-                used_mask_d[i][j]   = 1'b0;
-                //end
+                used_mask_d[i][j] = 1'b0;
             end
         end
     end
@@ -124,7 +121,7 @@ function void do_reads;
                     /* because we have to decide which instruction */
                     /* will be sent to the reader, we cannot respond */
                     /* to a rdy request until the next cycle */
-                    if(rdy_o[k] && !vld_d[k]) begin
+                    if(rdy_o[k] && !vld_d[k] && used_mask_d[i][j]) begin
                         vld_d[k] = 1'b1;
                         used_mask_d[i][j] = 1'b0;
                         data_d[k] = memory_q[i][j];
@@ -141,7 +138,7 @@ function void do_writes;
     /* then that means it can write, else block the writer */
     /* if writers tend to get stalled, increase DEPTH */
     for(int i = 0; i < MAX_COUNT; i++) begin
-        if(vld_i[i] && !rdy_d[i]) begin
+        if(vld_i[i] && !rdy_d[i] && !rdy_q[i]) begin
             for(int j = 0; j < DEPTH; j++) begin
                 if(!used_mask_q[i][j]) begin
                     automatic reservation_station_element_t e;
@@ -183,7 +180,6 @@ always_comb begin
     /* instruction in the memory which is handled in update_from_bus */
     /* so we do not need special logic on used_mask here */
     for(int i = 0; i < READ_COUNT; i++) begin
-        //vld_o[i] = vld_q[i] && ~(common_data_bus_i.fls && common_data_bus_i.fls_vector[data_o[i].rob_dest]);
         vld_o[i] = vld_q[i] && ~(common_data_bus_i.fls);
     end
 

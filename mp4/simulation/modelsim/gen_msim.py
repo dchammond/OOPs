@@ -16,9 +16,18 @@ vlog -sv -work work +incdir+{0}/mp4/hdl/common {{{0}/mp4/hdl/common/rv32i_types.
 vlog -sv -work work +incdir+{0}/mp4/hdl/common {{{0}/mp4/hdl/common/oops_structs.sv}}
 vlog -sv -work work +incdir+{0}/mp4/hdl/common {{{0}/mp4/hdl/common/queue.sv}}
 vlog -sv -work work +incdir+{0}/mp4/hdl/common {{{0}/mp4/hdl/common/pipeline.sv}}
-vlog -sv -work work +incdir+{0}/mp4/hdl/cpu    {{{0}/mp4/hdl/cpu/program_counter.sv}}
-vlog -sv -work work +incdir+{0}/mp4/hdl        {{{0}/mp4/hdl/mp4.sv}}
 vlog -sv -work work +incdir+{0}/mp4/hdl/common {{{0}/mp4/hdl/common/alu.sv}}
+vlog -sv -work work +incdir+{0}/mp4/hdl/cache  {{{0}/mp4/hdl/cache/cache_mux_types.sv}}
+vlog -sv -work work +incdir+{0}/mp4/hdl/cache  {{{0}/mp4/hdl/cache/arbiter.sv}}
+vlog -sv -work work +incdir+{0}/mp4/hdl/cache  {{{0}/mp4/hdl/cache/array.sv}}
+vlog -sv -work work +incdir+{0}/mp4/hdl/cache  {{{0}/mp4/hdl/cache/data_array.sv}}
+vlog -sv -work work +incdir+{0}/mp4/hdl/cache  {{{0}/mp4/hdl/cache/cache_control.sv}}
+vlog -sv -work work +incdir+{0}/mp4/hdl/cache  {{{0}/mp4/hdl/cache/cache_datapath.sv}}
+vlog -sv -work work +incdir+{0}/mp4/hdl/cache  {{{0}/mp4/hdl/cache/line_adapter.sv}}
+vlog -sv -work work +incdir+{0}/mp4/hdl/cache  {{{0}/mp4/hdl/cache/cache.sv}}
+vlog -sv -work work +incdir+{0}/mp4/hdl/cache  {{{0}/mp4/hdl/cache/cacheline_adaptor.sv}}
+vlog -sv -work work +incdir+{0}/mp4/hdl/cache  {{{0}/mp4/hdl/cache/cache_interface.sv}}
+vlog -sv -work work +incdir+{0}/mp4/hdl/cpu    {{{0}/mp4/hdl/cpu/program_counter.sv}}
 vlog -sv -work work +incdir+{0}/mp4/hdl/cpu {{{0}/mp4/hdl/cpu/instruction_register.sv}}
 vlog -sv -work work +incdir+{0}/mp4/hdl/cpu {{{0}/mp4/hdl/cpu/instruction_fetcher.sv}}
 vlog -sv -work work +incdir+{0}/mp4/hdl/cpu {{{0}/mp4/hdl/cpu/data_interface.sv}}
@@ -32,6 +41,7 @@ vlog -sv -work work +incdir+{0}/mp4/hdl/cpu {{{0}/mp4/hdl/cpu/address_buffer.sv}
 vlog -sv -work work +incdir+{0}/mp4/hdl/cpu {{{0}/mp4/hdl/cpu/reservation_station.sv}}
 vlog -sv -work work +incdir+{0}/mp4/hdl/cpu {{{0}/mp4/hdl/cpu/execution_unit.sv}}
 vlog -sv -work work +incdir+{0}/mp4/hdl/cpu {{{0}/mp4/hdl/cpu/cpu.sv}}
+vlog -sv -work work +incdir+{0}/mp4/hdl        {{{0}/mp4/hdl/mp4.sv}}
 
 vlog -sv -work work +incdir+{0}/mp4/hvl {{{0}/mp4/hvl/magic_dual_port.sv}}
 vlog -sv -work work +incdir+{0}/mp4/hvl {{{0}/mp4/hvl/param_memory.sv}}
@@ -44,10 +54,13 @@ vlog -sv -work work +incdir+{0}/mp4/hvl {{{0}/mp4/hvl/top.sv}}
 
 vsim -t 1ps -L altera_ver -L lpm_ver -L sgate_ver -L altera_mf_ver -L altera_lnsim_ver -L arriaiigz_hssi_ver -L arriaiigz_pcie_hip_ver -L arriaiigz_ver -L rtl_work -L work -voptargs="+acc"  mp4_tb
 
-add wave *
+add wave dut/*
+add wave dut/oops_cpu/*
+add wave dut/oops_cache/*
+radix hex
 view structure
 view signals
-run 1000ns
+run 25000ns
 
 quit
 """

@@ -31,3 +31,4 @@ timing
 *.tcl
 .qsys_edit/
 mp4/output_files/results.vcd
+*.swp

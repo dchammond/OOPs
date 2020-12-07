@@ -57,7 +57,8 @@ logic [31:0] shifted_mem_data_d;
 // State machine logic:
 enum int unsigned {
     IDLE,
-    MEM // Ineract with memory and forward to CDB.
+    MEM, // Ineract with memory and forward to CDB.
+    WAIT // Dummy cycle to not mess up the caches.
 } state_d, state_q;
 
 function bit [3:0] calculateByteEn
@@ -248,17 +249,34 @@ always_comb begin : next_state_logic
         end
         MEM : begin
             if (mem_resp_i) begin
-                state_d = IDLE;
+                state_d = WAIT;
             end
+        end
+        WAIT : begin
+            state_d = IDLE;
         end
     endcase
 end : next_state_logic
 
+logic mem_read_q, mem_read_d;
+logic mem_write_q, mem_write_d;
+logic [32-1:0] mem_addr_q, mem_addr_d;
+logic [ 4-1:0] mem_byte_en_q, mem_byte_en_d;
+logic [32-1:0] mem_data_q, mem_data_d;
+
+assign mem_read_o    = mem_read_q;
+assign mem_write_o   = mem_write_q;
+assign mem_addr_o    = mem_addr_q;
+assign mem_data_o    = mem_data_q;
+assign mem_byte_en_o = mem_byte_en_q;
+
 always_comb begin : state_actions
     mem_trans_rdy_d       = 1'b0;
-    mem_read_o            = 1'b0;
-    mem_write_o           = 1'b0;
-    mem_addr_o            = 32'd0;
+    mem_read_d            = mem_read_q;
+    mem_write_d           = mem_write_q;
+    mem_addr_d            = mem_addr_q;
+    mem_data_d            = mem_data_q;
+    mem_byte_en_d         = mem_byte_en_q;
     common_data_lane_o    = '0;
     current_transaction_d = current_transaction_q;
 
@@ -267,36 +285,49 @@ always_comb begin : state_actions
             mem_trans_rdy_d = 1'b1;
             current_transaction_d = current_transaction_o;
             // Use combinational values to start memory operation on cycle that data is available.
-            mem_byte_en_o = calculateByteEn(current_transaction_d.funct_3, current_transaction_d.addr[1:0]);
-            mem_data_o    =       shiftData(current_transaction_d.funct_3, current_transaction_d.addr[1:0], st, current_transaction_d.data);
-            mem_addr_o    =                {current_transaction_d.addr[31:2], 2'b0};
+            mem_byte_en_d = calculateByteEn(current_transaction_o.funct_3, current_transaction_o.addr[1:0]);
+            mem_data_d    =       shiftData(current_transaction_o.funct_3, current_transaction_o.addr[1:0], st, current_transaction_o.data);
+            mem_addr_d    =                {current_transaction_o.addr[31:2], 2'b0};
             // When data becomes valid, immediately assert read or write.
             if (mem_trans_vld_d) begin
-                mem_read_o    = (current_transaction_d.mem_op == ld) ? 1'b1 : 1'b0;
-                mem_write_o   = (current_transaction_d.mem_op == st) ? 1'b1 : 1'b0;
+                mem_read_d    = (current_transaction_o.mem_op == ld) ? 1'b1 : 1'b0;
+                mem_write_d   = (current_transaction_o.mem_op == st) ? 1'b1 : 1'b0;
             end
         end
         MEM : begin
-            // Hold all the memory values using the register values.
-            mem_byte_en_o = calculateByteEn(current_transaction_q.funct_3, current_transaction_q.addr[1:0]);
-            mem_data_o    =       shiftData(current_transaction_q.funct_3, current_transaction_q.addr[1:0], st, current_transaction_q.data);
-            mem_addr_o    = {current_transaction_q.addr[31:2], 2'b0};
-            mem_read_o    = (current_transaction_q.mem_op == ld) ? 1'b1 : 1'b0;
-            mem_write_o   = (current_transaction_q.mem_op == st) ? 1'b1 : 1'b0;
+            //// Hold all the memory values using the register values.
+            //mem_byte_en_o = calculateByteEn(current_transaction_q.funct_3, current_transaction_q.addr[1:0]);
+            //mem_data_o    =       shiftData(current_transaction_q.funct_3, current_transaction_q.addr[1:0], st, current_transaction_q.data);
+            //mem_addr_o    = {current_transaction_q.addr[31:2], 2'b0};
+            //mem_read_o    = (current_transaction_q.mem_op == ld) ? 1'b1 : 1'b0;
+            //mem_write_o   = (current_transaction_q.mem_op == st) ? 1'b1 : 1'b0;
 
+            if(mem_resp_i) begin
+                mem_read_d = 1'b0;
+                mem_write_d = 1'b0;
+            end
             common_data_lane_o.data     = shifted_mem_data_d;
             common_data_lane_o.ROB_dest = current_transaction_q.ROB_dest;
             common_data_lane_o.valid    = mem_resp_i;
+        end
+        WAIT : begin
+
         end
     endcase
 end : state_actions
 
 always_ff @(posedge clk) begin : next_state_assignment
+    state_q               <= state_d;
+    current_transaction_q <= current_transaction_d;
+    mem_read_q            <= mem_read_d;
+    mem_write_q           <= mem_write_d;
+    mem_addr_q            <= mem_addr_d;
+    mem_byte_en_q         <= mem_byte_en_d;
+    mem_data_q            <= mem_data_d;
     if (rst) begin
-        state_q <= IDLE;
-    end else begin
-        state_q               <= state_d;
-        current_transaction_q <= current_transaction_d;
+        state_q     <= IDLE;
+        mem_read_q  <= '0;
+        mem_write_q <= '0;
     end
 end : next_state_assignment
 

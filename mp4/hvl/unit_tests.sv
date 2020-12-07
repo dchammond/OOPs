@@ -7,7 +7,8 @@
 // `define generic_queue
 // `define address_unit
 // `define reg_file
-`define data_interface
+// `define data_interface
+`define reservation_station
 
 
 import rv32i_types::*;
@@ -459,6 +460,34 @@ module unit_tests;
     end : REGFILE_TEST_VECTORS
 `endif
 
+function instruction_element_t setInstructionElement
+(
+    input instruction_t           instruction_i,
+    input bit                     CB1_i,
+    input bit [           31:0]   val1_i,
+    input bit                     CB2_i,
+    input bit [           31:0]   val2_i,
+    input bit [            4:0]   dest_reg_i,
+    input bit [ROB_IDX_LEN-1:0]   ROB_dest_i,
+    input bit                     branch_i,
+    input bit [           31:0]   imm_i,
+    input bit [           31:0]   pc_i
+);
+    automatic instruction_element_t data_o;
+    data_o.instruction  = instruction_i;
+    data_o.CB1          = CB1_i;
+    data_o.CB2          = CB2_i;
+    data_o.val1         = val1_i;
+    data_o.val2         = val2_i;
+    data_o.dest_reg     = dest_reg_i;
+    data_o.ROB_dest     = ROB_dest_i;
+    data_o.branch       = branch_i;
+    data_o.b_imm        = imm_i;
+    data_o.pc           = pc_i;
+    return data_o;
+endfunction
+
+
 `ifdef data_interface
     parameter MULTIPLE_ISSUE = 1;
     parameter BUFFER_DEPTH   = 15;
@@ -495,33 +524,6 @@ module unit_tests;
     );
 
     instruction_element_t input0, input1, input2, input3, input4;
-
-    function address_unit_element_t setInstructionElement
-    (
-        input instruction_t           instruction_i,
-        input bit                     CB1_i,
-        input bit [           31:0]   val1_i,
-        input bit                     CB2_i,
-        input bit [           31:0]   val2_i,
-        input bit [            4:0]   dest_reg_i,
-        input bit [ROB_IDX_LEN-1:0]   ROB_dest_i,
-        input bit                     branch_i,
-        input bit [           31:0]   imm_i,
-        input bit [           31:0]   pc_i
-    );
-        automatic instruction_element_t data_o;
-        data_o.instruction  = instruction_i;
-        data_o.CB1          = CB1_i;
-        data_o.CB2          = CB2_i;
-        data_o.val1         = val1_i;
-        data_o.val2         = val2_i;
-        data_o.dest_reg     = dest_reg_i;
-        data_o.ROB_dest     = ROB_dest_i;
-        data_o.branch       = branch_i;
-        data_o.b_imm        = imm_i;
-        data_o.pc           = pc_i;
-        return data_o;
-    endfunction
 
     initial begin : init_test_vars
         input0 = setInstructionElement(ld_lw, 0, 31, 0, 28, 3, 7, 0, 12, 'h60);
@@ -706,6 +708,83 @@ module unit_tests;
 
     end : DATA_INTERFACE_TEST_VECTORS
 
+`endif
+
+`ifdef reservation_station
+    parameter DEPTH       = 4;
+    parameter WRITE_COUNT = 1;
+    parameter READ_COUNT  = 5;
+
+    common_data_bus_t common_data_bus_i;
+    logic [WRITE_COUNT-1:0] vld_i;
+    logic [WRITE_COUNT-1:0] rdy_i;
+    instruction_element_t data_i [WRITE_COUNT];
+    logic [ READ_COUNT-1:0] vld_o;
+    logic [ READ_COUNT-1:0] rdy_o;
+    reservation_station_element_t data_o [READ_COUNT];
+
+    reservation_station
+    #(
+        .DEPTH       (DEPTH),
+        .WRITE_COUNT (WRITE_COUNT),
+        .READ_COUNT  (READ_COUNT)
+    )
+    rs
+    (.*);
+
+    instruction_element_t inst00, inst01, inst10, inst11;
+
+    initial begin : init_test_vars
+        common_data_bus_i = '0;
+        inst00 = setInstructionElement(rr_add , 0, 2, 0, 2, 1, 1, 0, 0, 'h60);
+        inst01 = setInstructionElement(rr_aor , 0, 4, 0, 4, 2, 2, 0, 0, 'h64);
+        inst10 = setInstructionElement(rr_axor, 0, 6, 0, 6, 3, 3, 0, 0, 'h68);
+        inst11 = setInstructionElement(rr_aand, 0, 8, 0, 8, 4, 4, 0, 0, 'h6C);
+    end
+
+    initial begin : DATA_INTERFACE_TEST_VECTORS
+        vld_i = '0;
+        rdy_o = '0;
+        rst = 1'b1;
+        
+        repeat(2) @(posedge clk);
+        
+        data_i[0] = inst00;
+        rst = 1'b0;
+        
+        repeat(2) @(posedge clk);
+        
+        @(negedge clk);
+        
+        vld_i = 1'b1;
+        
+        @(negedge clk);
+        
+        data_i[0] = inst01;
+        
+        @(negedge clk);
+        
+        data_i[0] = inst10;
+        
+        @(negedge clk);
+        
+        data_i[0] = inst11;
+
+        @(negedge clk);
+
+        vld_i = 1'b0;
+        
+        repeat(2) @(posedge clk);
+        
+        @(negedge clk);
+        
+        rdy_o = 6'b111111;
+        
+        repeat(4) @(posedge clk);
+        
+        $display("DONE!");
+        $stop();
+    end
 `endif
 
 endmodule

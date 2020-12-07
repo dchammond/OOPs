@@ -6,6 +6,8 @@
 import rv32i_types::*;
 import oops_structs::*;
 
+// `define DEBUG_MSG
+
 module address_unit
 #(
     DEPTH = 15,
@@ -69,6 +71,29 @@ assign address_data_o.data     = data_q[read_addr_q].val2; // This only matters 
 assign address_data_o.ROB_dest = data_q[read_addr_q].ROB_dest;
 assign address_data_o.funct_3  = data_q[read_addr_q].funct_3;
 assign address_data_o.mem_op   = data_q[read_addr_q].mem_op;
+
+`ifdef DEBUG_MSG
+always @(negedge clk) begin
+    if(used_mask_q[read_addr_q]) begin
+        automatic address_unit_element_t e = data_q[read_addr_q];
+        $display("[%t]: (%m): Current store/load", $time);
+        $display("[%t]: (%m): ---------------------------------------", $time);
+        $display("[%t]: (%m): | CB1 | CB2 | mem op | funct | BR Cnt |", $time);
+        $display("[%t]: (%m): - - - - - - - - - - - - - - - - - - - -", $time);
+        $display("[%t]: (%m): |  %u  |  %u  |   %s   |  %s    |   %1d    |", $time, e.CB1, e.CB2, e.mem_op.name(), e.funct_3.name(), e.BR_cnt);
+        $display("[%t]: (%m): ---------------------------------------", $time);
+    end
+    if(write) begin
+        automatic address_unit_element_t e = data_d[write_addr_q];
+        $display("[%t]: (%m): New store/load", $time);
+        $display("[%t]: (%m): ---------------------------------------", $time);
+        $display("[%t]: (%m): | CB1 | CB2 | mem op | funct | BR Cnt |", $time);
+        $display("[%t]: (%m): - - - - - - - - - - - - - - - - - - - -", $time);
+        $display("[%t]: (%m): |  %u  |  %u  |   %s   |  %s    |   %1d    |", $time, e.CB1, e.CB2, e.mem_op.name(), e.funct_3.name(), e.BR_cnt);
+        $display("[%t]: (%m): ---------------------------------------", $time);
+    end
+end
+`endif
 
 function void readsWrites();
     if(read) begin

@@ -20,11 +20,12 @@ module register_file
     input logic [ISSUE_WIDTH-1:0]               commit_i, // Which lanes are committing.
     input logic [ISSUE_WIDTH-1:0]               speculate_i, // Which lanes are speculating.
 
-    input logic [ISSUE_WIDTH-1:0] [ 4:0]        commit_idx_i, // which register to write to
-    input logic [ISSUE_WIDTH-1:0] [ 4:0]        speculate_idx_i, // which register to write to
+    input logic [ 4:0]        commit_idx_i [ISSUE_WIDTH], // which register to write to
+    input logic [ROB_IDX_LEN-1:0] commit_rob_idx_i [ISSUE_WIDTH],
+    input logic [ 4:0]        speculate_idx_i [ISSUE_WIDTH], // which register to write to
 
-    input logic [ISSUE_WIDTH-1:0] [31:0]        commit_data_i , // What to put in that register (either ROB reference or actual val depending on commit_i or speculate_i)
-    input logic [ISSUE_WIDTH-1:0] [ROB_IDX_LEN-1:0] speculate_data_i , // What to put in that register (either ROB reference or actual val depending on commit_i or speculate_i)
+    input logic [31:0]        commit_data_i [ISSUE_WIDTH], // What to put in that register (either ROB reference or actual val depending on commit_i or speculate_i)
+    input logic [ROB_IDX_LEN-1:0] speculate_data_i [ISSUE_WIDTH], // What to put in that register (either ROB reference or actual val depending on commit_i or speculate_i)
     
     output reg_bus_t                            reg_bus_o // Always outputting the entire reg_bus
 );
@@ -38,7 +39,9 @@ always_comb begin : register_updates
     for (int i = 0; i < ISSUE_WIDTH; i = i + 1) begin
         if (commit_i[i] == 1'b1 && commit_idx_i[i] != '0) begin
             reg_file_d[commit_idx_i[i]].data = commit_data_i[i];
-            reg_file_d[commit_idx_i[i]].CB   = 1'b0;
+            if (commit_rob_idx_i[i] == reg_file_q[commit_idx_i[i]].ROB_ref) begin
+                reg_file_d[commit_idx_i[i]].CB = 1'b0;
+            end
         end
     end
     for (int i = 0; i < ISSUE_WIDTH; i = i + 1) begin 

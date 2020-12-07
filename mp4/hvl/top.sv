@@ -36,6 +36,10 @@ initial begin : output_vcd
     $dumpvars(0, dut);
 end
 
+initial begin : setup_time
+    $timeformat(-9, 2, "ns", 20);
+end
+
 /*
 The following signals need to be set:
 Instruction and trap:
@@ -102,33 +106,27 @@ Clock and reset signals:
     >itf.rst 
 
 Burst Memory Ports:
-    itf.mem_read
-    itf.mem_write
-    itf.mem_wdata
-    itf.mem_rdata
-    itf.mem_addr
-    itf.mem_resp
+    >itf.mem_read
+    >itf.mem_write
+    >itf.mem_wdata
+    >itf.mem_rdata
+    >itf.mem_addr
+    >itf.mem_resp
 
 Please refer to tb_itf.sv for more information.
 */
 
 mp4 dut
 (
-    .clk                (itf.clk       ),
-    .rst                (itf.rst       ),
+    .clk                (itf.clk),
+    .rst                (itf.rst),
 
-    .mm_data_read       (itf.data_read ),
-    .mm_data_write      (itf.data_write),
-    .mm_data_mbe        (itf.data_mbe  ),
-    .mm_data_addr       (itf.data_addr ),
-    .mm_data_wdata      (itf.data_wdata),
-    .mm_data_resp       (itf.data_resp ),
-    .mm_data_rdata      (itf.data_rdata),
-
-    .mm_inst_read       (itf.inst_read ),
-    .mm_inst_addr       (itf.inst_addr ),
-    .mm_inst_resp       (itf.inst_resp ),
-    .mm_inst_rdata      (itf.inst_rdata)
+    .pmem_read          (itf.mem_read),
+    .pmem_write         (itf.mem_write),
+    .pmem_resp          (itf.mem_resp),
+    .pmem_addr          (itf.mem_addr),
+    .pmem_wdata         (itf.mem_wdata),
+    .pmem_rdata         (itf.mem_rdata)
 );
 /***************************** End Instantiation *****************************/
 

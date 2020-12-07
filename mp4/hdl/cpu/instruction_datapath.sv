@@ -8,38 +8,43 @@ import oops_structs::*;
 
 module instruction_datapath
 #(
-    IQ_DEPTH = 15
+    IQ_DEPTH    = 15,
+    ISSUE_WIDTH = 1
 )
 (
-    input                          clk,
-    input                          rst,
+    input                                   clk,
+    input                                   rst,
 
-    input  logic                   flush_i,
+    input  logic                            flush_i,
 
-    output logic [32-1:0]          pc_o,
+    output logic [32-1:0]                   pc_o,
 
-    input  logic                   mem_resp_i,
-    input  logic [32-1:0]          mem_rdata_i,
+    input  logic                            mem_resp_i,
+    input  logic [32-1:0]                   mem_rdata_i,
 
-    output logic                   mem_read_o,
-    output logic [32-1:0]          mem_address_o,
+    output logic                            mem_read_o,
+    output logic [32-1:0]                   mem_address_o,
 
-    input  logic                   load_branch_i,
-    input  logic [32-1:0]          branch_pc_i,
+    input  logic                            load_branch_i,
+    input  logic [32-1:0]                   branch_pc_i,
 
-    input  logic [ROB_IDX_LEN-1:0] rob_dest_i,
-    input  reg_bus_t               reg_bus_i,
+    input  logic                            load_jalr_i,
+    input  logic [32-1:0]                   jalr_pc_i,
 
-    output logic                   instr_queue_vld_o,
-    input  logic                   instr_queue_rdy_o,
-    output instruction_element_t   instr_queue_o
+    input  logic [ROB_IDX_LEN-1:0]          rob_dest_i,
+    input  reg_bus_t                        reg_bus_i,
+    input common_data_bus_t                 common_data_bus_i,
+
+    input rob_element_t [ROB_ENTRIES-1:0]       rob_bus_i,
+
+    output logic                            instr_queue_vld_o,
+    input  logic                            instr_queue_rdy_o,
+    output instruction_element_t            instr_queue_o
 );
 
 logic          load_plus_four_o;
 logic          load_offset_o;
 logic [32-1:0] offset_o;
-logic          load_alu_mod2_o;
-logic [32-1:0] jalr_alu_out_o;
 
 program_counter
 #(
@@ -54,8 +59,8 @@ pc_calc
     .offset_i         (offset_o),
     .load_branch_i    (load_branch_i),
     .branch_pc_i      (branch_pc_i),
-    .load_alu_mod2_i  (load_alu_mod2_o),
-    .jalr_alu_out_i   (jalr_alu_out_o),
+    .load_alu_mod2_i  (load_jalr_i),
+    .jalr_alu_out_i   (jalr_pc_i),
     .out              (pc_o)
 );
 
@@ -82,6 +87,7 @@ inst_fetch
 (
     .clk                 (clk),
     .rst                 (rst),
+    .fls                 (flush_i),
     .pc_i                (pc_o), // might need to be "previous pc"?
     .mem_rdata_i         (mem_rdata_i),
     .mem_resp_i          (mem_resp_i),
@@ -113,6 +119,7 @@ inst_decode
 (
     .clk            (clk),
     .rst            (rst),
+    .fls            (flush_i),
     .load_decoder_i (load_decoder_o),
     .funct3_i       (funct3_o),
     .funct7_i       (funct7_o),
@@ -134,22 +141,25 @@ inst_decode
 
 instruction_queue
 #(
-    .WIDTH ($bits(instruction_element_t)),
-    .DEPTH (IQ_DEPTH)
+    .ISSUE_WIDTH (ISSUE_WIDTH),
+    .WIDTH       ($bits(instruction_element_t)),
+    .DEPTH       (IQ_DEPTH)
 )
 inst_queue
 (
-    .clk           (clk),
-    .rst           (rst),
-    .flush         (flush_i),
-    .rob_dest_i    (rob_dest_i),
-    .reg_bus_i     (reg_bus_i),
-    .vld_i         (instr_vld_o),
-    .rdy_i         (instr_rdy_o),
-    .instruction_i (instruction_o),
-    .vld_o         (instr_queue_vld_o),
-    .rdy_o         (instr_queue_rdy_o),
-    .instruction_o (instr_queue_o)
+    .clk                (clk),
+    .rst                (rst),
+    .flush              (flush_i),
+    .rob_dest_i         (rob_dest_i),
+    .rob_bus_i          (rob_bus_i),
+    .reg_bus_i          (reg_bus_i),
+    .common_data_bus_i  (common_data_bus_i),
+    .vld_i              (instr_vld_o),
+    .rdy_i              (instr_rdy_o),
+    .instruction_i      (instruction_o),
+    .vld_o              (instr_queue_vld_o),
+    .rdy_o              (instr_queue_rdy_o),
+    .instruction_o      (instr_queue_o)
 );
 
 endmodule : instruction_datapath

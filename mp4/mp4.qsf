@@ -57,20 +57,19 @@ set_global_assignment -name EDA_NATIVELINK_SIMULATION_TEST_BENCH mp4_tb -section
 set_global_assignment -name EDA_TEST_BENCH_NAME mp4_tb -section_id eda_simulation
 set_global_assignment -name EDA_DESIGN_INSTANCE_NAME NA -section_id mp4_tb
 set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME mp4_tb -section_id mp4_tb
-set_global_assignment -name EDA_TEST_BENCH_FILE hvl/magic_dual_port.sv -section_id mp4_tb
-set_global_assignment -name EDA_TEST_BENCH_FILE hvl/param_memory.sv -section_id mp4_tb
-set_global_assignment -name EDA_TEST_BENCH_FILE hvl/rvfi_itf.sv -section_id mp4_tb
-set_global_assignment -name EDA_TEST_BENCH_FILE hvl/rvfimon.v -section_id mp4_tb
-set_global_assignment -name EDA_TEST_BENCH_FILE hvl/shadow_memory.sv -section_id mp4_tb
-set_global_assignment -name EDA_TEST_BENCH_FILE hvl/source_tb.sv -section_id mp4_tb
-set_global_assignment -name EDA_TEST_BENCH_FILE hvl/tb_itf.sv -section_id mp4_tb
-set_global_assignment -name EDA_TEST_BENCH_FILE hvl/top.sv -section_id mp4_tb
-set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
-set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
-set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cache/cache_mux_types.sv
 set_global_assignment -name SYSTEMVERILOG_FILE hdl/common/rv32i_types.sv
 set_global_assignment -name SYSTEMVERILOG_FILE hdl/common/oops_structs.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cache/line_adapter.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cache/data_array.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cache/cacheline_adaptor.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cache/cache_interface.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cache/cache_datapath.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cache/cache_control.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cache/cache.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cache/array.sv
+set_global_assignment -name SYSTEMVERILOG_FILE hdl/cache/arbiter.sv
 set_global_assignment -name SYSTEMVERILOG_FILE hdl/cpu/data_interface.sv
 set_global_assignment -name SYSTEMVERILOG_FILE hdl/cpu/address_unit.sv
 set_global_assignment -name SDC_FILE mp4.out.sdc
@@ -90,4 +89,21 @@ set_global_assignment -name SYSTEMVERILOG_FILE hdl/cpu/reservation_station.sv
 set_global_assignment -name SYSTEMVERILOG_FILE hdl/cpu/execution_unit.sv
 set_global_assignment -name SYSTEMVERILOG_FILE hdl/cpu/cpu.sv
 set_global_assignment -name SYSTEMVERILOG_FILE hdl/mp4.sv
+set_global_assignment -name EDA_TEST_BENCH_NAME unit_tests -section_id eda_simulation
+set_global_assignment -name EDA_DESIGN_INSTANCE_NAME NA -section_id unit_tests
+set_global_assignment -name EDA_TEST_BENCH_MODULE_NAME unit_tests -section_id unit_tests
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_global_assignment -name EDA_TEST_BENCH_FILE hvl/magic_dual_port.sv -section_id mp4_tb
+set_global_assignment -name EDA_TEST_BENCH_FILE hvl/param_memory.sv -section_id mp4_tb
+set_global_assignment -name EDA_TEST_BENCH_FILE hvl/rvfi_itf.sv -section_id mp4_tb
+set_global_assignment -name EDA_TEST_BENCH_FILE hvl/rvfimon.v -section_id mp4_tb
+set_global_assignment -name EDA_TEST_BENCH_FILE hvl/shadow_memory.sv -section_id mp4_tb
+set_global_assignment -name EDA_TEST_BENCH_FILE hvl/source_tb.sv -section_id mp4_tb
+set_global_assignment -name EDA_TEST_BENCH_FILE hvl/tb_itf.sv -section_id mp4_tb
+set_global_assignment -name EDA_TEST_BENCH_FILE hvl/top.sv -section_id mp4_tb
+set_global_assignment -name EDA_TEST_BENCH_FILE hvl/unit_tests.sv -section_id unit_tests
+set_global_assignment -name OPTIMIZATION_MODE "AGGRESSIVE PERFORMANCE"
+set_global_assignment -name REMOVE_DUPLICATE_REGISTERS OFF
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
